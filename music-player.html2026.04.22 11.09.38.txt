@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Музыкальный плеер</title>
+    <style>
+        * { margin: 0; padding: 0; }
+        body { background: transparent; overflow: hidden; }
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop>
+        <source src="https://raw.githubusercontent.com/89538033334z-svg/Music-/main/leberch-ambient-atmospheric-509533.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        (function() {
+            const audio = document.getElementById('bgMusic');
+            if (!audio) return;
+            
+            audio.volume = 0.2;
+            
+            const STORAGE_KEY = 'musicUserPreference';
+            const userPreference = localStorage.getItem(STORAGE_KEY);
+            
+            if (userPreference === 'on') {
+                audio.play().catch(() => {});
+            }
+            
+            audio.addEventListener('play', function() {
+                localStorage.setItem(STORAGE_KEY, 'on');
+            });
+            
+            audio.addEventListener('pause', function() {
+                localStorage.setItem(STORAGE_KEY, 'off');
+            });
+            
+            window.addEventListener('message', function(e) {
+                if (e.data === 'toggleMusic') {
+                    if (audio.paused) {
+                        audio.play().catch(() => {});
+                    } else {
+                        audio.pause();
+                    }
+                } else if (e.data === 'getMusicState') {
+                    window.parent.postMessage({
+                        type: 'musicState',
+                        isPlaying: !audio.paused
+                    }, '*');
+                }
+            });
+            
+            window.parent.postMessage({ type: 'musicPlayerReady' }, '*');
+        })();
+    </script>
+
+</body>
+</html>
